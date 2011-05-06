@@ -142,40 +142,37 @@ class CLBCli(object):
     def list_loadbalancers(self, args):
         self._get_connexion()
 
-        if len(args) >= 1 and args[0] == "deleted":
-            lbs = self.cnx.loadbalancers.list_deleted()
-        else:
-            lbs = self.cnx.loadbalancers.list()
-            if len(args) >= 1:
-                filtered_lbs = []
-                allowed_variables = ['id',
-                                     'port',
-                                     'protocol',
-                                     'name',
-                                     'status',
-                                     'address',
-                                     ]
-                config = self._parse_variables_args(allowed_variables, args)
-                for d in lbs:
-                    if 'id' in config and int(d.id) == int(config['id']):
-                        filtered_lbs.append(d)
-                    elif 'port' in config and \
-                            int(d.port) == int(config['port']):
-                        filtered_lbs.append(d)
-                    elif 'protocol' in config and \
-                            d.protocol.lower() == config['protocol'].lower():
-                        filtered_lbs.append(d)
-                    elif 'name' in config and \
-                            d.name.lower() == config['name'].lower():
-                        filtered_lbs.append(d)
-                    elif 'status' in config and \
-                            d.status.lower() == config['status'].lower():
-                        filtered_lbs.append(d)
-                    elif 'address' in config:
-                        for ip in d.virtualIps:
-                            if ip.address == config['address'].lower():
-                                filtered_lbs.append(d)
-                lbs = filtered_lbs
+        lbs = self.cnx.loadbalancers.list()
+        if len(args) >= 1:
+            filtered_lbs = []
+            allowed_variables = ['id',
+                                 'port',
+                                 'protocol',
+                                 'name',
+                                 'status',
+                                 'address',
+                                 ]
+            config = self._parse_variables_args(allowed_variables, args)
+            for d in lbs:
+                if 'id' in config and int(d.id) == int(config['id']):
+                    filtered_lbs.append(d)
+                elif 'port' in config and \
+                        int(d.port) == int(config['port']):
+                    filtered_lbs.append(d)
+                elif 'protocol' in config and \
+                        d.protocol.lower() == config['protocol'].lower():
+                    filtered_lbs.append(d)
+                elif 'name' in config and \
+                        d.name.lower() == config['name'].lower():
+                    filtered_lbs.append(d)
+                elif 'status' in config and \
+                        d.status.lower() == config['status'].lower():
+                    filtered_lbs.append(d)
+                elif 'address' in config:
+                    for ip in d.virtualIps:
+                        if ip.address == config['address'].lower():
+                            filtered_lbs.append(d)
+            lbs = filtered_lbs
 
         for lb in lbs:
             pvip = []

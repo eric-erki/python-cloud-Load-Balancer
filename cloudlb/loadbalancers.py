@@ -109,16 +109,6 @@ class LoadBalancerManager(base.ManagerWithFind):
                     self._list("/loadbalancers.json", "loadBalancers") \
                  if x._info['status'] != "DELETED"]
 
-    def list_deleted(self):
-        """
-        Get a list of deleted loadbalancers.
-        :rtype: list of :class:`LoadBalancer`
-
-        Arguments:
-        """
-        return [x for x in self._list("/loadbalancers.json", "loadBalancers") \
-                 if x._info['status'] == "DELETED"]
-
     def create(self, name, port,
                protocol, nodes, virtualIps):
         """

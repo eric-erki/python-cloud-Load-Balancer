@@ -48,17 +48,6 @@ List LoadBalancers::
       for ip in lb.virtualIps:
           print "%s/%s" % (ip.ipVersion, ip.address)
 
-List deleted LoadBalancers::
-
-  #!/usr/bin/python
-  import cloudlb
-  clb = cloudlb.CloudLoadBalancer("username", "apikey","chicago")
-
-  lbs = clb.loadbalancers.list_deleted()
-  for x in lbs:
-      print x.name
-
-
 Get LB by ID::
 
   #!/usr/bin/python

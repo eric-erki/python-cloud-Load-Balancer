@@ -221,23 +221,25 @@ clb = cloudlb.CloudLoadBalancer(&quot;username&quot;, &quot;apikey&quot;,&quot;c
 lb = clb.loadbalancers.get(LoadBalancerID)
 lb.delete()
 </pre>
-<p>List deleted LBs:</p>
-<pre class="literal-block">
-#!/usr/bin/python
-import cloudlb
-clb = cloudlb.CloudLoadBalancer(&quot;username&quot;, &quot;apikey&quot;,&quot;chicago&quot;)
-
-lbs = clb.loadbalancers.list_deleted()
-for x in lbs:
-    print x.name
-</pre>
 <p>List nodes of a LB:</p>
 <pre class="literal-block">
 #!/usr/bin/python
 import cloudlb
 clb = cloudlb.CloudLoadBalancer(&quot;username&quot;, &quot;apikey&quot;,&quot;chicago&quot;)
 
-lbs = clb.loadbalancers.list_deleted()
+lbs = clb.loadbalancers.list()
+lb = lbs[0] #get the first one
+nodes=lb.nodes.filter(status='ENABLED')
+for node in nodes:
+    print node.address
+</pre>
+<p>Filter nodes via condition of a LB:</p>
+<pre class="literal-block">
+#!/usr/bin/python
+import cloudlb
+clb = cloudlb.CloudLoadBalancer(&quot;username&quot;, &quot;apikey&quot;,&quot;chicago&quot;)
+
+lbs = clb.loadbalancers.list()
 lb = lbs[0] #get the first one
 for node in lb.nodes:
     print node.address
@@ -403,7 +405,7 @@ hm = cloudlb.healthmonitor.HealthMonitor(
     timeout=10,
     attemptsBeforeDeactivation=3,
     path=&quot;/&quot;,
-    statusRegex=&quot;&quot;,
+    statusRegex=&quot;^[234][0-9][0-9]$&quot;,
     bodyRegex=&quot;testing&quot;)
 hm_monitor.add(hm)
 </pre>
@@ -433,7 +435,7 @@ ss = cloudlb.sessionpersistense.SessionPersistense(persistenceType=&quot;HTTP_CO
 ssp = mylb.session_persistense()
 ssp.add(ss)
 </pre>
-<p>Get session persistense:</p>
+<p>Get session persistence:</p>
 <pre class="literal-block">
 #!/usr/bin/python
 import cloudlb
@@ -501,8 +503,8 @@ print accesslist.list()
 # Delete all accesslist
 accesslist.delete()
 
-# Delete accesslist by ID (TODO: Not working ATM)
-# accesslist.delete(id=62)
+# Delete accesslist by ID
+accesslist.delete(id=62)
 </pre>
 </div>
 <div class="section" id="license">

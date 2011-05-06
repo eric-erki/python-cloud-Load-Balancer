@@ -18,9 +18,6 @@ ${A} create loadbalancer \
 # List all LoadBalancers
 $A list loadbalancers >/dev/null
 
-# List all deleted Loadbalancers
-$A list loadbalancers deleted >/dev/null
-
 # List filtering by 
 LBTEST=$(${A} list loadbalancers name=$LBNAME|head -1|sed 's/ID: //;s/,.*//')
 
