@@ -524,7 +524,7 @@ class CLBCli(object):
 
         loadbalancer = self._get_loadbalancer(loadbalancer)
         ss = cloudlb.sessionpersistence.SessionPersistence(
-            persistenceType="HTTP_COOKIE")
+            persistenceType=session_persistence_type)
         ssp = loadbalancer.session_persistence()
         ssp.add(ss)
 
