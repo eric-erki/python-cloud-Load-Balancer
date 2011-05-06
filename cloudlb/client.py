@@ -73,15 +73,13 @@ class CLBClient(httplib2.Http):
         fullurl = "%s%s%s" % (self.region_account_url, url, ext)
 
         #DEBUGGING:
-        if 'PYTHON_CLOUDB_DEBUG' in os.environ:
-            sys.stderr.write("URL: %s" % (fullurl))
-            sys.stderr.write("ARGS: %s" % (str(kwargs)))
-            sys.stderr.write("METHOD: %s" % (str(method)))
+        if 'PYTHON_CLOUDLB_DEBUG' in os.environ:
+            sys.stderr.write("URL: %s\n" % (fullurl))
+            sys.stderr.write("ARGS: %s\n" % (str(kwargs)))
+            sys.stderr.write("METHOD: %s\n" % (str(method)))
             if 'body' in kwargs:
                 from pprint import pprint as p
-                p("BODY: %s" % kwargs['body'],
-                  stream=sys.stderr)
-
+                p(json.loads(kwargs['body']))
         response, body = self.request(fullurl, method, **kwargs)
 
         if body:
