@@ -90,13 +90,15 @@ $A -w set healthmonitor ${LBTEST} type="CONNECT" delay="10" timeout="10" attempt
 # Set healthmonitor to HTTP (need to have path statusRegex and bodyRegex)
 $A -w set healthmonitor ${LBTEST} type="HTTP" delay="5" timeout="2" attemptsBeforeDeactivation=3 path=/ statusRegex="^[234][0-9][0-9]$" bodyRegex=testing >/dev/null
 
-# Set healthmonitor to HTTPS (need to have path statusRegex and bodyRegex)
-# $A -w set healthmonitor ${LBTEST} type="HTTPS" delay="5" timeout="1" attemptsBeforeDeactivation=5 path=/ statusRegex="^[234][0-9][0-9]$" bodyRegex=foobar >/dev/null
-
 # Show healthmonitoring rule.
 $A -w show healthmonitor ${LBTEST} >/dev/null
 
 # Delete healthmonitorring
+$A -w delete healthmonitor ${LBTEST} >/dev/null
+
+# Set healthmonitor to HTTPS (need to have path statusRegex and bodyRegex)
+$A -w set loadbalancer ${LBTEST} protocol=HTTPS >/dev/null
+$A -w set healthmonitor ${LBTEST} type="HTTPS" delay="5" timeout="1" attemptsBeforeDeactivation=5 path=/ statusRegex="^[234][0-9][0-9]$" bodyRegex=foobar >/dev/null >/dev/null
 $A -w delete healthmonitor ${LBTEST} >/dev/null
 
 ### LoadBalancer attribute
