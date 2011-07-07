@@ -18,10 +18,15 @@ class CLBClient(httplib2.Http):
                  username,
                  api_key,
                  region,
-                 auth_url=cloudlb.consts.DEFAULT_AUTH_SERVER):
+                 auth_url=None):
         super(CLBClient, self).__init__()
         self.username = username
         self.api_key = api_key
+
+        if not auth_url and region == 'lon':
+            auth_url = cloudlb.consts.UK_AUTH_SERVER
+        else:
+            auth_url = cloudlb.consts.DEFAULT_AUTH_SERVER
         self._auth_url = auth_url
 
         if region.lower() in cloudlb.consts.REGION.values():

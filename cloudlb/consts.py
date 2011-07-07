@@ -6,6 +6,9 @@ USER_AGENT = 'python-cloudb/%s' % VERSION
 # Default AUTH SERVER
 DEFAULT_AUTH_SERVER = "https://auth.api.rackspacecloud.com/v1.0"
 
+# UK AUTH SERVER
+UK_AUTH_SERVER = "https://lon.auth.api.rackspacecloud.com/v1.0"
+
 # Default URL for Regions
 REGION_URL = "https://%s.loadbalancers.api.rackspacecloud.com/v1.0"
 
@@ -13,6 +16,7 @@ REGION_URL = "https://%s.loadbalancers.api.rackspacecloud.com/v1.0"
 REGION = {
     "chicago": "ord",
     "dallas": "dfw",
+    "london": "lon",
 }
 
 # Allowed Protocol
