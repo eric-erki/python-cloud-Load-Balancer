@@ -39,7 +39,15 @@ class LoadBalancer(base.Resource):
                 v = v['name']
 
             if k == "virtualIps":
-                v = [VirtualIP(parent=self, **x) for x in v]
+                nv = []  
+
+                for x in v:
+                    tmp_dict = {}
+                    for k,y in x.items():
+                        tmp_dict[str(k)] = y 
+                    nv.append(tmp_dict)
+
+                v = [VirtualIP(parent=self, **x) for x in nv] 
 
             if k in ('created', 'updated'):
                 v = base.convert_iso_datetime(v['time'])
