@@ -17,19 +17,22 @@ class CLBClient(httplib2.Http):
     def __init__(self,
                  username,
                  api_key,
-                 region,
-                 auth_url=None):
+                 region):
         super(CLBClient, self).__init__()
         self.username = username
         self.api_key = api_key
 
-        if not auth_url and region == 'lon':
+        if region == 'lon':
             auth_url = cloudlb.consts.UK_AUTH_SERVER
+        elif region.startswith("http"):
+            auth_url = region
         else:
             auth_url = cloudlb.consts.DEFAULT_AUTH_SERVER
         self._auth_url = auth_url
 
-        if region.lower() in cloudlb.consts.REGION.values():
+        if region.startswith("http"):
+            self.region = "custom"
+        elif region.lower() in cloudlb.consts.REGION.values():
             self.region = region
         elif region.lower() in cloudlb.consts.REGION.keys():
             self.region = cloudlb.consts.REGION[region]
@@ -41,6 +44,10 @@ class CLBClient(httplib2.Http):
         self.region_account_url = None
 
     def authenticate(self):
+        if self.region == "custom":
+            self.region_account_url = self._auth_url
+            return
+
         headers = {'X-Auth-User': self.username, 'X-Auth-Key': self.api_key}
         response, body = self.request(self._auth_url, 'GET', headers=headers)
 
@@ -68,7 +75,8 @@ class CLBClient(httplib2.Http):
         # Perform the request once. If we get a 401 back then it
         # might be because the auth token expired, so try to
         # re-authenticate and try again. If it still fails, bail.
-        kwargs.setdefault('headers', {})['X-Auth-Token'] = self.auth_token
+        if self.region != 'custom':
+            kwargs.setdefault('headers', {})['X-Auth-Token'] = self.auth_token
         kwargs['headers']['User-Agent'] = cloudlb.consts.USER_AGENT
         if 'body' in kwargs:
             kwargs['headers']['Content-Type'] = 'application/json'

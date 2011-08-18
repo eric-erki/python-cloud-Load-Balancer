@@ -17,6 +17,7 @@ REGION = {
     "chicago": "ord",
     "dallas": "dfw",
     "london": "lon",
+    "custom": "custom",
 }
 
 # Allowed Protocol
