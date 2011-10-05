@@ -8,7 +8,6 @@ import json
 import cloudlb.consts
 import cloudlb.errors
 
-
 class CLBClient(httplib2.Http):
     """
     Client class for accessing the CLB API.
@@ -89,7 +88,7 @@ class CLBClient(httplib2.Http):
 
         if body:
             try:
-                body = json.loads(body)
+                body = json.loads(body, object_hook=lambda obj: dict((k.encode('ascii'), v) for k, v in obj.items()))
             except(ValueError):
                 pass
 
