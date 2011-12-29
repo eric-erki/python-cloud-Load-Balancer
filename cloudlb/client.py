@@ -4,6 +4,7 @@ import httplib2
 import os
 import sys
 import json
+import pprint
 
 import cloudlb.consts
 import cloudlb.errors
@@ -79,12 +80,12 @@ class CLBClient(httplib2.Http):
 
         #DEBUGGING:
         if 'PYTHON_CLOUDLB_DEBUG' in os.environ:
+            pp = pprint.PrettyPrinter(stream=sys.stderr, indent=2)
             sys.stderr.write("URL: %s\n" % (fullurl))
             sys.stderr.write("ARGS: %s\n" % (str(kwargs)))
             sys.stderr.write("METHOD: %s\n" % (str(method)))
             if 'body' in kwargs:
-                from pprint import pprint as p
-                p(json.loads(kwargs['body']))
+                pp.printp(json.loads(kwargs['body']))
         response, body = self.request(fullurl, method, **kwargs)
 
         if body:
@@ -92,6 +93,10 @@ class CLBClient(httplib2.Http):
                 body = json.loads(body)
             except(ValueError):
                 pass
+
+            if 'PYTHON_CLOUDLB_DEBUG' in os.environ:
+                sys.stderr.write("BODY:")
+                pp.pprint(body)
 
         if (response.status < 200) or (response.status > 299):
             raise cloudlb.errors.ResponseError(response.status,
