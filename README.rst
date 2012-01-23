@@ -352,6 +352,25 @@ Access Lists::
   # Delete accesslist by ID
   accesslist.delete(id=62)  
 
+Custom Error Page::
+
+  #!/usr/bin/python
+  import cloudlb
+  clb = cloudlb.CloudLoadBalancer("username", "apikey","chicago")
+  
+  lbs = clb.loadbalancers.list()
+  mylb = lbs[0] #first lb
+  errorpage = mylb.errorpage()
+
+  # Display current error page
+  print errorpage.get()
+
+  # Change the error page
+  errorpage.add('<html><body><h1>Error</h1></body></html>')
+
+  # Revert to the default error page
+  errorpage.delete() 
+
 
 LICENSE
 =======
