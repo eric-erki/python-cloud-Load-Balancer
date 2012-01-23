@@ -4,6 +4,7 @@ import httplib2
 import os
 import sys
 import json
+import pprint
 
 import cloudlb.consts
 import cloudlb.errors
@@ -41,21 +42,24 @@ class CLBClient(httplib2.Http):
         self.region_account_url = None
 
     def authenticate(self):
-        headers = {'X-Auth-User': self.username, 'X-Auth-Key': self.api_key}
-        response, body = self.request(self._auth_url, 'GET', headers=headers)
+        headers={'Content-Type': 'application/json'}
+        body = '{"credentials": {"username": "%s", "key": "%s"}}' % (self.username, self.api_key)
+        response, body = self.request(self._auth_url, 'POST', body=body, headers=headers)
+
+        auth_data = json.loads(body)['auth']
 
         # A status code of 401 indicates that the supplied credentials
         # were not accepted by the authentication service.
         if response.status == 401:
             raise cloudlb.errors.AuthenticationFailed()
 
-        if response.status != 204:
+        if response.status != 200:
             raise cloudlb.errors.ResponseError(response.status,
                                                response.reason)
 
         self.account_number = int(os.path.basename(
-                response['x-server-management-url']))
-        self.auth_token = response['x-auth-token']
+          auth_data['serviceCatalog']['cloudServers'][0]['publicURL'])) 
+        self.auth_token = auth_data['token']['id']
         self.region_account_url = "%s/%s" % (
             cloudlb.consts.REGION_URL % (self.region),
             self.account_number)
@@ -79,12 +83,12 @@ class CLBClient(httplib2.Http):
 
         #DEBUGGING:
         if 'PYTHON_CLOUDLB_DEBUG' in os.environ:
+            pp = pprint.PrettyPrinter(stream=sys.stderr, indent=2)
             sys.stderr.write("URL: %s\n" % (fullurl))
             sys.stderr.write("ARGS: %s\n" % (str(kwargs)))
             sys.stderr.write("METHOD: %s\n" % (str(method)))
             if 'body' in kwargs:
-                from pprint import pprint as p
-                p(json.loads(kwargs['body']))
+                pp.pprint(json.loads(kwargs['body']))
         response, body = self.request(fullurl, method, **kwargs)
 
         if body:
@@ -92,6 +96,10 @@ class CLBClient(httplib2.Http):
                 body = json.loads(body)
             except(ValueError):
                 pass
+
+            if 'PYTHON_CLOUDLB_DEBUG' in os.environ:
+                sys.stderr.write("BODY:")
+                pp.pprint(body)
 
         if (response.status < 200) or (response.status > 299):
             raise cloudlb.errors.ResponseError(response.status,

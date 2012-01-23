@@ -11,7 +11,7 @@ from cloudlb.healthmonitor import HealthMonitorManager
 from cloudlb.sessionpersistence import SessionPersistenceManager
 from cloudlb.connectionlogging import ConnectionLogging
 from cloudlb.connectionthrottle import ConnectionThrottleManager
-
+from cloudlb.errorpage import ErrorPage
 
 class LoadBalancer(base.Resource):
     accessList = None
@@ -79,6 +79,10 @@ class LoadBalancer(base.Resource):
         sm = SessionPersistenceManager(
             self.manager.api.client, base.getid(self))
         return sm
+
+    def errorpage(self):
+        errorpage = ErrorPage(self.manager.api.client, base.getid(self))
+        return errorpage
 
     def connection_logging(self):
         cm = ConnectionLogging(
