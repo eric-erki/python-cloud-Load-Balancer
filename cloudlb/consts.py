@@ -4,10 +4,10 @@ VERSION = "0.4"
 USER_AGENT = 'python-cloudb/%s' % VERSION
 
 # Default AUTH SERVER
-DEFAULT_AUTH_SERVER = "https://auth.api.rackspacecloud.com/v1.0"
+DEFAULT_AUTH_SERVER = "https://auth.api.rackspacecloud.com/v1.1/auth"
 
 # UK AUTH SERVER
-UK_AUTH_SERVER = "https://lon.auth.api.rackspacecloud.com/v1.0"
+UK_AUTH_SERVER = "https://lon.auth.api.rackspacecloud.com/v1.1/auth"
 
 # Default URL for Regions
 REGION_URL = "https://%s.loadbalancers.api.rackspacecloud.com/v1.0"

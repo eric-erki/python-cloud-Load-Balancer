@@ -42,21 +42,24 @@ class CLBClient(httplib2.Http):
         self.region_account_url = None
 
     def authenticate(self):
-        headers = {'X-Auth-User': self.username, 'X-Auth-Key': self.api_key}
-        response, body = self.request(self._auth_url, 'GET', headers=headers)
+        headers={'Content-Type': 'application/json'}
+        body = '{"credentials": {"username": "%s", "key": "%s"}}' % (self.username, self.api_key)
+        response, body = self.request(self._auth_url, 'POST', body=body, headers=headers)
+
+        auth_data = json.loads(body)['auth']
 
         # A status code of 401 indicates that the supplied credentials
         # were not accepted by the authentication service.
         if response.status == 401:
             raise cloudlb.errors.AuthenticationFailed()
 
-        if response.status != 204:
+        if response.status != 200:
             raise cloudlb.errors.ResponseError(response.status,
                                                response.reason)
 
         self.account_number = int(os.path.basename(
-                response['x-server-management-url']))
-        self.auth_token = response['x-auth-token']
+          auth_data['serviceCatalog']['cloudServers'][0]['publicURL'])) 
+        self.auth_token = auth_data['token']['id']
         self.region_account_url = "%s/%s" % (
             cloudlb.consts.REGION_URL % (self.region),
             self.account_number)
