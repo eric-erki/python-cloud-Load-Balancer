@@ -1,5 +1,5 @@
 ==================================================================
- Python interface to Rackspace Load Balancer as a Service product
+ Python interface to Rackspace Cloud Load Balancers 
 ==================================================================
 
 :Homepage:  https://github.com/chmouel/python-cloudlb
