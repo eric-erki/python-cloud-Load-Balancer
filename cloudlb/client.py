@@ -85,7 +85,7 @@ class CLBClient(httplib2.Http):
             sys.stderr.write("ARGS: %s\n" % (str(kwargs)))
             sys.stderr.write("METHOD: %s\n" % (str(method)))
             if 'body' in kwargs:
-                pp.printp(json.loads(kwargs['body']))
+                pp.pprint(json.loads(kwargs['body']))
         response, body = self.request(fullurl, method, **kwargs)
 
         if body:
