@@ -22,7 +22,7 @@ REGION = {
 # Allowed Protocol
 LB_PROTOCOLS = ["FTP", "HTTP", "IMAPv4", "POP3", "LDAP",
                 "LDAPS", "HTTPS", "IMAPS",
-                "POP3S", "SMTP"]
+                "POP3S", "SMTP", "TCP"]
 
 # Attributed allowed to be modified on loadbalancers
 LB_ATTRIBUTES_MODIFIABLE = ["name", "algorithm", "protocol", "port"]
