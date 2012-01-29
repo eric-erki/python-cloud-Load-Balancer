@@ -113,6 +113,17 @@ class LoadBalancerManager(base.ManagerWithFind):
                     self._list("/loadbalancers.json", "loadBalancers") \
                  if x._info['status'] != "DELETED"]
 
+    def search(self, ip):
+        """
+        Get a list of loadbalancers who are balancing traffic to `ip`.
+        The loadbalancer details are not as complete as the list() call,
+        only name, status and id are returned.
+        """
+        return [x for x in \
+                    self._list("/loadbalancers.json?nodeaddress=%s" % ip, 
+                        "loadBalancers")]
+        
+
     def create(self, name, port,
                protocol, nodes, virtualIps):
         """
