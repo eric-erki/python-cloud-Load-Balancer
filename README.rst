@@ -192,6 +192,17 @@ Get usage statitiscs on a specfic LoadBalancer::
 
   print mylb.get_usage()
 
+Get real-time statistics on a specific LoadBalancer::
+
+  #!/usr/bin/python
+  import cloudlb
+  clb = cloudlb.CloudLoadBalancer("username", "apikey","chicago")
+  
+  lbs = clb.loadbalancers.list()
+  mylb = lbs[0] #first lb
+
+  print mylb.get_stats()
+
 Get limits on all LoadBalancers::
 
   #!/usr/bin/python

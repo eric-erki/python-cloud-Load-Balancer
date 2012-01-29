@@ -6,6 +6,7 @@ from cloudlb.errors import InvalidProtocol, InvalidLoadBalancerName
 from cloudlb.node import Node, NodeDict
 from cloudlb.virtualip import VirtualIP
 from cloudlb.usage import get_usage
+from cloudlb.stats import Stats
 from cloudlb.accesslist import AccessList
 from cloudlb.healthmonitor import HealthMonitorManager
 from cloudlb.sessionpersistence import SessionPersistenceManager
@@ -58,6 +59,10 @@ class LoadBalancer(base.Resource):
         ret = get_usage(self.manager.api.client, lbId=base.getid(self),
                         startTime=startTime, endTime=endTime)
         return ret
+
+    def get_stats(self):
+        stats = Stats(self.manager.api.client, base.getid(self))
+        return stats.get() 
 
     def accesslist(self):
         accesslist = AccessList(self.manager.api.client, base.getid(self))
