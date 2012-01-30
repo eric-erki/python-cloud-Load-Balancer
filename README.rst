@@ -173,7 +173,7 @@ Update attributes on LoadBalancer::
 
   mylb.update()
 
-Get usage statitiscs on all LoadBalancers::
+Get usage statistics on all LoadBalancers::
 
   #!/usr/bin/python
   import cloudlb
@@ -181,7 +181,7 @@ Get usage statitiscs on all LoadBalancers::
   
   print clb.get_usage()
 
-Get usage statitiscs on a specfic LoadBalancer::
+Get usage statistics on a specfic LoadBalancer::
 
   #!/usr/bin/python
   import cloudlb
