@@ -55,7 +55,8 @@ class LoadBalancer(base.Resource):
             setattr(self, k, v)
 
     def add_nodes(self, nodes):
-        self.manager.add_nodes(self.id, nodes)
+        resp, body = self.manager.add_nodes(self.id, nodes)
+        return [Node(parent=self, **x) for x in body['nodes']]
 
     def update(self):
         self.manager.update(self, self._info, self.__dict__)
@@ -158,10 +159,12 @@ class LoadBalancerManager(base.ManagerWithFind):
         """
         self._delete("/loadbalancers/%s" % base.getid(loadbalancerid))
 
-    def add_nodes(self, loadbalancerId, nodes):
+    def add_nodes(self, loadBalancerId, nodes):
         nodeDico = [x.toDict() for x in nodes]
-        self._action('nodes', "%d/nodes" % base.getid(loadbalancerId), \
-                         nodeDico)
+        resp, body = self.api.client.post('/loadbalancers/%d/nodes' % (
+                            base.getid(loadBalancerId)
+                            ), body={"nodes": nodeDico})
+        return (resp, body)
 
     def delete_node(self, loadBalancerId, nodeId):
         self.api.client.delete('/loadbalancers/%d/nodes/%d' % (
@@ -191,8 +194,3 @@ class LoadBalancerManager(base.ManagerWithFind):
 
         self.api.client.put('/loadbalancers/%s' % base.getid(lb), body=ret)
 
-    def _action(self, action, url, info=None):
-        """
-        Perform a loadbalancer POST "action".
-        """
-        self.api.client.post('/loadbalancers/%s' % url, body={action: info})
