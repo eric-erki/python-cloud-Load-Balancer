@@ -48,6 +48,17 @@ List LoadBalancers::
       for ip in lb.virtualIps:
           print "%s/%s" % (ip.ipVersion, ip.address)
 
+List LoadBalancers who have nodes that belong to it::
+
+  #!/usr/bin/python
+  import cloudlb
+  clb = cloudlb.CloudLoadBalancer("username", "apikey","chicago")
+
+  ip = '10.1.1.1'
+  lbs = clb.loadbalancers.search(ip)
+  for lb in lbs:
+      print "%s has %s node attached" % (lb.name, ip))
+
 Get LB by ID::
 
   #!/usr/bin/python
@@ -162,7 +173,7 @@ Update attributes on LoadBalancer::
 
   mylb.update()
 
-Get usage statitiscs on all LoadBalancers::
+Get usage statistics on all LoadBalancers::
 
   #!/usr/bin/python
   import cloudlb
@@ -170,7 +181,7 @@ Get usage statitiscs on all LoadBalancers::
   
   print clb.get_usage()
 
-Get usage statitiscs on a specfic LoadBalancer::
+Get usage statistics on a specfic LoadBalancer::
 
   #!/usr/bin/python
   import cloudlb
@@ -180,6 +191,17 @@ Get usage statitiscs on a specfic LoadBalancer::
   mylb = lbs[0] #first lb
 
   print mylb.get_usage()
+
+Get real-time statistics on a specific LoadBalancer::
+
+  #!/usr/bin/python
+  import cloudlb
+  clb = cloudlb.CloudLoadBalancer("username", "apikey","chicago")
+  
+  lbs = clb.loadbalancers.list()
+  mylb = lbs[0] #first lb
+
+  print mylb.get_stats()
 
 Get limits on all LoadBalancers::
 

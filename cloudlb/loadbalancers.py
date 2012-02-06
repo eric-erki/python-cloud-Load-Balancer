@@ -6,6 +6,7 @@ from cloudlb.errors import InvalidProtocol, InvalidLoadBalancerName
 from cloudlb.node import Node, NodeDict
 from cloudlb.virtualip import VirtualIP
 from cloudlb.usage import get_usage
+from cloudlb.stats import Stats
 from cloudlb.accesslist import AccessList
 from cloudlb.healthmonitor import HealthMonitorManager
 from cloudlb.sessionpersistence import SessionPersistenceManager
@@ -39,15 +40,7 @@ class LoadBalancer(base.Resource):
                 v = v['name']
 
             if k == "virtualIps":
-                nv = []  
-
-                for x in v:
-                    tmp_dict = {}
-                    for k,y in x.items():
-                        tmp_dict[str(k)] = y 
-                    nv.append(tmp_dict)
-
-                v = [VirtualIP(parent=self, **x) for x in nv] 
+                v = [VirtualIP(parent=self, **x) for x in v]
 
             if k in ('created', 'updated'):
                 v = base.convert_iso_datetime(v['time'])
@@ -66,6 +59,10 @@ class LoadBalancer(base.Resource):
         ret = get_usage(self.manager.api.client, lbId=base.getid(self),
                         startTime=startTime, endTime=endTime)
         return ret
+
+    def get_stats(self):
+        stats = Stats(self.manager.api.client, base.getid(self))
+        return stats.get() 
 
     def accesslist(self):
         accesslist = AccessList(self.manager.api.client, base.getid(self))
@@ -120,6 +117,17 @@ class LoadBalancerManager(base.ManagerWithFind):
         return [x for x in \
                     self._list("/loadbalancers.json", "loadBalancers") \
                  if x._info['status'] != "DELETED"]
+
+    def search(self, ip):
+        """
+        Get a list of loadbalancers who are balancing traffic to `ip`.
+        The loadbalancer details are not as complete as the list() call,
+        only name, status and id are returned.
+        """
+        return [x for x in \
+                    self._list("/loadbalancers.json?nodeaddress=%s" % ip, 
+                        "loadBalancers")]
+        
 
     def create(self, name, port,
                protocol, nodes, virtualIps):
