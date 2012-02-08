@@ -122,7 +122,11 @@ class CLBClient(httplib2.Http):
                 sys.stderr.write("BODY:")
                 pp.pprint(body)
 
-        if (response.status < 200) or (response.status > 299):
+        if response.status == 413:
+            raise cloudlb.errors.ResponseError(response.status,
+                    "Account is currently above limit, please wait until"
+                    + retry + ".")
+        elif (response.status < 200) or (response.status > 299):
             raise cloudlb.errors.ResponseError(response.status,
                                                response.reason)
 
