@@ -2,7 +2,9 @@
 __author__ = "Chmouel Boudjnah <chmouel@chmouel.com>"
 
 
-class ResponseError(Exception):
+class CloudlbException(Exception): pass
+
+class ResponseError(CloudlbException):
     """
     Raised when the remote service returns an error.
     """
@@ -18,28 +20,28 @@ class ResponseError(Exception):
         return '%d: %s' % (self.status, self.reason)
 
 
-class InvalidRegion(Exception):
+class InvalidRegion(CloudlbException):
     """
     Raised when the region specified is invalid
     """
     pass
 
 
-class InvalidProtocol(Exception):
+class InvalidProtocol(CloudlbException):
     """
     Raised when the protocol specified is invalid
     """
     pass
 
 
-class AuthenticationFailed(Exception):
+class AuthenticationFailed(CloudlbException):
     """
     Raised on a failure to authenticate.
     """
     pass
 
 
-class InvalidLoadBalancerName(Exception):
+class InvalidLoadBalancerName(CloudlbException):
     def __init__(self, reason):
         self.reason = reason
         Exception.__init__(self)
