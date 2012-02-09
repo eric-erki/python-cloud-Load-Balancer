@@ -5,6 +5,8 @@ import os
 import sys
 import json
 import pprint
+import time
+import datetime
 
 import cloudlb.consts
 import cloudlb.errors
@@ -42,9 +44,11 @@ class CLBClient(httplib2.Http):
         self.region_account_url = None
 
     def authenticate(self):
-        headers={'Content-Type': 'application/json'}
-        body = '{"credentials": {"username": "%s", "key": "%s"}}' % (self.username, self.api_key)
-        response, body = self.request(self._auth_url, 'POST', body=body, headers=headers)
+        headers = {'Content-Type': 'application/json'}
+        body = '{"credentials": {"username": "%s", "key": "%s"}}' \
+               % (self.username, self.api_key)
+        response, body = self.request(self._auth_url, 'POST',
+                                      body=body, headers=headers)
 
         auth_data = json.loads(body)['auth']
 
@@ -58,7 +62,7 @@ class CLBClient(httplib2.Http):
                                                response.reason)
 
         self.account_number = int(os.path.basename(
-          auth_data['serviceCatalog']['cloudServers'][0]['publicURL'])) 
+          auth_data['serviceCatalog']['cloudServers'][0]['publicURL']))
         self.auth_token = auth_data['token']['id']
         self.region_account_url = "%s/%s" % (
             cloudlb.consts.REGION_URL % (self.region),
@@ -91,6 +95,23 @@ class CLBClient(httplib2.Http):
                 pp.pprint(json.loads(kwargs['body']))
         response, body = self.request(fullurl, method, **kwargs)
 
+        # If we hit a 413 (Request Limit) response code,
+        # check to see how long we have to wait.
+        # If you have to wait more then 10 seconds,
+        # raise ResponseError with a more sane message then CLB provides
+        if response.status == 413:
+            now = datetime.datetime.strptime(response['date'],
+                    '%a, %d %b %Y %H:%M:%S %Z')
+            retry = datetime.datetime.strptime(response['retry-after'],
+                    '%a, %d %b %Y %H:%M:%S %Z')
+            if (retry - now) > datetime.timedelta(seconds=10):
+                raise cloudlb.errors.ResponseError(response.status,
+                        "Account is currently above limit, please wait "
+                        + (retry - now) + ".")
+            else:
+                time.sleep((retry - now).seconds)
+                response, body = self.request(fullurl, method, **kwargs)
+
         if body:
             try:
                 body = json.loads(body)
@@ -101,7 +122,11 @@ class CLBClient(httplib2.Http):
                 sys.stderr.write("BODY:")
                 pp.pprint(body)
 
-        if (response.status < 200) or (response.status > 299):
+        if response.status == 413:
+            raise cloudlb.errors.ResponseError(response.status,
+                    "Account is currently above limit, please wait until"
+                    + retry + ".")
+        elif (response.status < 200) or (response.status > 299):
             raise cloudlb.errors.ResponseError(response.status,
                                                response.reason)
 
