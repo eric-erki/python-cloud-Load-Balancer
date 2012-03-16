@@ -13,6 +13,7 @@ from cloudlb.sessionpersistence import SessionPersistenceManager
 from cloudlb.connectionlogging import ConnectionLogging
 from cloudlb.connectionthrottle import ConnectionThrottleManager
 from cloudlb.errorpage import ErrorPage
+from cloudlb.ssltermination import SSLTermination
 
 class LoadBalancer(base.Resource):
     accessList = None
@@ -93,6 +94,10 @@ class LoadBalancer(base.Resource):
             self.manager.api.client, base.getid(self),
         )
         return ctm
+
+    def ssl_termination(self):
+        sslt = SSLTermination(self.manager.api.client, base.getid(self))
+        return sslt
 
 
 class LoadBalancerManager(base.ManagerWithFind):
