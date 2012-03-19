@@ -1,8 +1,10 @@
 # -*- encoding: utf-8 -*-
 __author__ = "Jason Straw <jason.straw@rackspace.com>"
 
+import cloudlb.errors
+
 class SSLTermination(object):
-    self.kwargs = {'port': 'securePort',
+    kwargs = {'port': 'securePort',
                    'enabled': 'enabled',
                    'secureonly': 'secureTrafficOnly',
                    'certificate': 'certificate',
@@ -11,7 +13,10 @@ class SSLTermination(object):
                   }
         
     def __repr__(self):
-        return "<SSLTermination: port %s>" % self.port
+        try:
+            return "<SSLTermination: port %s>" % self.port
+        except AttributeError:
+            return "<SSLTermination: unconfigured>"
 
     def __init__(self, client, lbId=None):
         self.lbId = lbId
@@ -22,7 +27,14 @@ class SSLTermination(object):
         self.client = client
 
     def get(self):
-        ret = self.client.get("%s.json" % self.path)
+        """Get dictionary of current LB settings.
+
+    Returns None if SSL Termination is not configured.
+    """
+        try:
+            ret = self.client.get("%s.json" % self.path)
+        except cloudlb.errors.NotFound:
+            return None
         sslt = ret[1]
         for (key, value) in sslt.iteritems():
             key = [k for k, v in self.kwargs.iteritems() if v == value][0]
@@ -34,14 +46,28 @@ class SSLTermination(object):
         return self
         
     def update(self, **kwargs):
+        """Update SSL Termination settings:
+        
+    Takes keyword args of items to update.  
+    
+    If you're updating the cert/key/intermediate certificate, 
+    you must provide all 3 keywords.
+    """
         body = {}
-        for (key, value) in kwargs.iteritems():
-            body[self.kwargs[key]] = value
-            setattr(self, key, value)
+        if self.intermediate != None:
+            s = set(['privatekey','certificate','intermediate'])
+        else:
+            s = set(['privatekey','certificate'])
+        if len(s.difference_update(set(kwargs))) == 0:
+            for (key, value) in kwargs.iteritems():
+                body[self.kwargs[key]] = value
+                setattr(self, key, value)
+        else:
+            raise 
         self._put(body)
 
 
-    def add(self, port, privatekey, certificate, intermediate=None, enabled=True, secureonly=True):
+    def add(self, port, privatekey, certificate, intermediate=None, enabled=True, secureonly=False):
         self.port = port
         self.enabled = enabled
         self.secureonly = secureonly
@@ -49,11 +75,11 @@ class SSLTermination(object):
         self.certificate = certificate
         self.intermediate = intermediate
         body = {'securePort': self.port, 'enabled': self.enabled, 'secureTrafficOnly': self.secureonly}
-        body['privatekey'] = self._pem_to_json(self.privatekey)
-        body['certificate'] = self._pem_to_json(self.certificate)
+        body['privatekey'] = self.privatekey
+        body['certificate'] = self.certificate
         if self.intermediate != None:
-           body['intermediateCertificate'] = self._pem_to_json(self.intermediate)
-        self._put(self, body)
+           body['intermediateCertificate'] = self.intermediate
+        self._put(body)
 
     def _put(self, body):
         self.client.put(self.path, body=body)

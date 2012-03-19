@@ -126,6 +126,8 @@ class CLBClient(httplib2.Http):
             raise cloudlb.errors.ResponseError(response.status,
                     "Account is currently above limit, please wait until"
                     + retry + ".")
+        elif response.status == 404:
+            raise cloudlb.errors.NotFound(response.status, body['message'])
         elif (response.status < 200) or (response.status > 299):
             raise cloudlb.errors.ResponseError(response.status,
                                                response.reason)
