@@ -41,6 +41,12 @@ class AuthenticationFailed(CloudlbException):
     pass
 
 
+class NotFound(ResponseError):
+    """
+    Raised when there the object wasn't found.
+    """
+    pass
+
 class InvalidLoadBalancerName(CloudlbException):
     def __init__(self, reason):
         self.reason = reason
