@@ -117,7 +117,7 @@ class CLBClient(httplib2.Http):
                         "Account is currently above limit, please wait %s seconds." % 
                         (response['retry-after']))
                 else:
-                    time.sleep(10)
+                    time.sleep(5)
                     response, body = self.request(fullurl, method, **kwargs)
             except:
                 raise
