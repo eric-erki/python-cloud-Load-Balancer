@@ -8,6 +8,7 @@ import pprint
 import time
 import datetime
 
+import cloudlb.base
 import cloudlb.consts
 import cloudlb.errors
 
@@ -95,6 +96,8 @@ class CLBClient(httplib2.Http):
                 pp.pprint(json.loads(kwargs['body']))
         response, body = self.request(fullurl, method, **kwargs)
 
+        if 'PYTHON_CLOUDLB_DEBUG' in os.environ:
+            sys.stderr.write("RETURNED HEADERS: %s\n" % (str(response)))
         # If we hit a 413 (Request Limit) response code,
         # check to see how long we have to wait.
         # If you have to wait more then 10 seconds,
@@ -102,15 +105,30 @@ class CLBClient(httplib2.Http):
         if response.status == 413:
             now = datetime.datetime.strptime(response['date'],
                     '%a, %d %b %Y %H:%M:%S %Z')
-            retry = datetime.datetime.strptime(response['retry-after'],
-                    '%a, %d %b %Y %H:%M:%S %Z')
-            if (retry - now) > datetime.timedelta(seconds=10):
-                raise cloudlb.errors.ResponseError(response.status,
-                        "Account is currently above limit, please wait "
-                        + (retry - now) + ".")
+            # Retry-After header now doesn't always return a timestamp, 
+            # try parsing the timestamp, if that fails wait 5 seconds 
+            # and try again.  If it succeeds figure out how long to wait
+            try:
+                retry = datetime.datetime.strptime(response['retry-after'],
+                        '%a, %d %b %Y %H:%M:%S %Z')
+            except ValueError:
+                if response['retry-after'] > '30':
+                    raise cloudlb.errors.ResponseError(response.status,
+                        "Account is currently above limit, please wait %s seconds." % 
+                        (response['retry-after']))
+                else:
+                    time.sleep(5)
+                    response, body = self.request(fullurl, method, **kwargs)
+            except:
+                raise
             else:
-                time.sleep((retry - now).seconds)
-                response, body = self.request(fullurl, method, **kwargs)
+                if (retry - now) > datetime.timedelta(seconds=10):
+                    raise cloudlb.errors.ResponseError(response.status,
+                        "Account is currently above limit, please wait %s seconds." % 
+                        (retry - now))
+                else:
+                    time.sleep((retry - now).seconds)
+                    response, body = self.request(fullurl, method, **kwargs)
 
         if body:
             try:

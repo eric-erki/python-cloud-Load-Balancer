@@ -25,6 +25,7 @@ class SSLTermination(object):
             self.path = "/loadbalancers/%s/ssltermination" % self.lbId
 
         self.client = client
+        self.get()
 
     def get(self):
         """Get dictionary of current LB settings.
@@ -35,12 +36,16 @@ class SSLTermination(object):
             ret = self.client.get("%s.json" % self.path)
         except cloudlb.errors.NotFound:
             return None
-        sslt = ret[1]
-        for (key, value) in sslt.iteritems():
-            key = [k for k, v in self.kwargs.iteritems() if v == value][0]
-            setattr(self, key, value)
+        sslt = ret[1]['sslTermination']
+        for (skey, value) in sslt.iteritems():
+            key = [k for (k, v) in self.kwargs.iteritems() if v == skey]
+            try:
+                setattr(self, key[0], value)
+            except IndexError:
+                print skey, repr(key)
+                raise
         if 'intermediateCertificate' in sslt.keys():
-            self.intermediate = sslt_json_to_pem(sslt['intermediateCertificate'])
+            self.intermediate = sslt['intermediateCertificate']
         else:
             self.intermediate = None
         return self
@@ -54,16 +59,9 @@ class SSLTermination(object):
     you must provide all 3 keywords.
     """
         body = {}
-        if self.intermediate != None:
-            s = set(['privatekey','certificate','intermediate'])
-        else:
-            s = set(['privatekey','certificate'])
-        if len(s.difference_update(set(kwargs))) == 0:
-            for (key, value) in kwargs.iteritems():
-                body[self.kwargs[key]] = value
-                setattr(self, key, value)
-        else:
-            raise 
+        for (key, value) in kwargs.iteritems():
+            body[self.kwargs[key]] = value
+            setattr(self, key, value)
         self._put(body)
 
 
