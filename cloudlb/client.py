@@ -38,7 +38,7 @@ class CLBClient(httplib2.Http):
         elif region.lower() in cloudlb.consts.REGION.keys():
             self.region = cloudlb.consts.REGION[region]
         else:
-            raise cloudlb.errors.InvalidRegion()
+            raise cloudlb.errors.InvalidRegion(region)
 
         self.auth_token = None
         self.account_number = None
@@ -48,19 +48,33 @@ class CLBClient(httplib2.Http):
         headers = {'Content-Type': 'application/json'}
         body = '{"credentials": {"username": "%s", "key": "%s"}}' \
                % (self.username, self.api_key)
+
+        #DEBUGGING:
+        if 'PYTHON_CLOUDLB_DEBUG' in os.environ:
+            pp = pprint.PrettyPrinter(stream=sys.stderr, indent=2)
+            sys.stderr.write("URL: %s\n" % (self._auth_url))
+
         response, body = self.request(self._auth_url, 'POST',
                                       body=body, headers=headers)
 
-        auth_data = json.loads(body)['auth']
+        if 'PYTHON_CLOUDLB_DEBUG' in os.environ:
+            sys.stderr.write("RETURNED HEADERS: %s\n" % (str(response)))
+            sys.stderr.write("BODY:")
+            pp.pprint(body)
+
+        data = json.loads(body)
 
         # A status code of 401 indicates that the supplied credentials
         # were not accepted by the authentication service.
         if response.status == 401:
-            raise cloudlb.errors.AuthenticationFailed()
+            reason = data['unauthorized']['message']
+            raise cloudlb.errors.AuthenticationFailed(response.status, reason)
 
         if response.status != 200:
             raise cloudlb.errors.ResponseError(response.status,
                                                response.reason)
+
+        auth_data = data['auth']
 
         self.account_number = int(os.path.basename(
           auth_data['serviceCatalog']['cloudServers'][0]['publicURL']))
@@ -103,6 +117,9 @@ class CLBClient(httplib2.Http):
         # If you have to wait more then 10 seconds,
         # raise ResponseError with a more sane message then CLB provides
         if response.status == 413:
+            if 'PYTHON_CLOUDLB_DEBUG' in os.environ:
+                sys.stderr.write("(413) BODY:")
+                pp.pprint(body)
             now = datetime.datetime.strptime(response['date'],
                     '%a, %d %b %Y %H:%M:%S %Z')
             # Retry-After header now doesn't always return a timestamp, 

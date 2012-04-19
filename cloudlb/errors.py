@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 __author__ = "Chmouel Boudjnah <chmouel@chmouel.com>"
 
+import cloudlb.consts
 
 class CloudlbException(Exception): pass
 
@@ -24,8 +25,16 @@ class InvalidRegion(CloudlbException):
     """
     Raised when the region specified is invalid
     """
-    pass
+    regions = cloudlb.consts.REGION.values() + cloudlb.consts.REGION.keys()
+    def __init__(self, region):
+        self.region = region
+        Exception.__init__(self)
 
+    def __str__(self):
+        return 'Region %s not in active region list: %s' % (self.region, ', '.join(self.regions))
+
+    def __repr__(self):
+        return 'Region %s not in active region list: %s' % (self.region, ', '.join(self.regions))
 
 class InvalidProtocol(CloudlbException):
     """
@@ -34,7 +43,7 @@ class InvalidProtocol(CloudlbException):
     pass
 
 
-class AuthenticationFailed(CloudlbException):
+class AuthenticationFailed(ResponseError):
     """
     Raised on a failure to authenticate.
     """
