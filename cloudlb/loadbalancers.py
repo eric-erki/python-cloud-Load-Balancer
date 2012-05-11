@@ -136,7 +136,7 @@ class LoadBalancerManager(base.ManagerWithFind):
         
 
     def create(self, name, port,
-               protocol, nodes, virtualIps):
+               protocol, nodes, virtualIps, algorithm='RANDOM'):
         """
         Create a new loadbalancer.
 
@@ -159,6 +159,7 @@ class LoadBalancerManager(base.ManagerWithFind):
             "protocol": protocol,
             "nodes": nodeDico,
             "virtualIps": vipDico,
+            "algorithm": algorithm,
             }}
 
         return self._create("/loadbalancers", body, "loadBalancer")
