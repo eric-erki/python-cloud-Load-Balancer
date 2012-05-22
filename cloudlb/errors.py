@@ -20,6 +20,30 @@ class ResponseError(CloudlbException):
     def __repr__(self):
         return '%d: %s' % (self.status, self.reason)
 
+class RateLimit(ResponseError):
+    """
+    Raised when too many requests have been made 
+    of the remote service in a given time period.
+    """
+    self.status = 413
+    
+    def __init__(self, wait):
+        self.wait = wait
+        self.reason = "Account is currently above limit, please wait %s seconds." % (wait)
+        Exception.__init__(self)
+
+class BadRequest(ResponseError):
+    """
+    Raised when the request doesn't match what was anticipated.
+    """
+    pass
+
+# Immutable and Unprocessable Entity are both 422 errors, but have slightly different meanings
+class ImmuntableEntity(ResponseError):
+    pass
+
+class UnprocessableEntity(ResponseError):
+    pass
 
 class InvalidRegion(CloudlbException):
     """

@@ -130,9 +130,7 @@ class CLBClient(httplib2.Http):
                         '%a, %d %b %Y %H:%M:%S %Z')
             except ValueError:
                 if response['retry-after'] > '30':
-                    raise cloudlb.errors.ResponseError(response.status,
-                        "Account is currently above limit, please wait %s seconds." % 
-                        (response['retry-after']))
+                    raise cloudlb.errors.RateLimit(response['retry-after'])
                 else:
                     time.sleep(5)
                     response, body = self.request(fullurl, method, **kwargs)
@@ -140,9 +138,7 @@ class CLBClient(httplib2.Http):
                 raise
             else:
                 if (retry - now) > datetime.timedelta(seconds=10):
-                    raise cloudlb.errors.ResponseError(response.status,
-                        "Account is currently above limit, please wait %s seconds." % 
-                        (retry - now))
+                    raise cloudlb.errors.RateLimit((retry - now))
                 else:
                     time.sleep((retry - now).seconds)
                     response, body = self.request(fullurl, method, **kwargs)
@@ -158,14 +154,21 @@ class CLBClient(httplib2.Http):
                 pp.pprint(body)
 
         if response.status == 413:
-            raise cloudlb.errors.ResponseError(response.status,
-                    "Account is currently above limit, please wait until"
-                    + retry + ".")
+            raise cloudlb.errors.RateLimit(retry)
         elif response.status == 404:
             raise cloudlb.errors.NotFound(response.status, body['message'])
+        elif response.status == 400:
+            raise cloudlb.errors.BadRequest(response.status, body['message'])
+        elif response.status == 422:
+            if 'unprocessable' in body['message']:
+                raise cloudlb.errors.UnprocessableEntity(response.status, 
+                        body['message'])
+            else:
+                raise cloudlb.errors.ImmutableEntity(response.status,
+                        body['message'])
         elif (response.status < 200) or (response.status > 299):
             raise cloudlb.errors.ResponseError(response.status,
-                                               response.reason)
+                    body['message'])
 
         return response, body
 
