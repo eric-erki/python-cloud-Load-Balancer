@@ -50,7 +50,9 @@ class LoadBalancer(base.Resource):
 
     def add_nodes(self, nodes):
         resp, body = self.manager.add_nodes(self.id, nodes)
-        return [Node(parent=self, **x) for x in body['nodes']]
+        n = [Node(parent=self, **x) for x in body['nodes']]
+        self.nodes.add(n)
+        return n
 
     def update(self):
         self.manager.update(self, self._info, self.__dict__)

@@ -29,6 +29,24 @@ class NodeDict(SubResourceDict):
                 ret.append(d)
         return ret
 
+    def add(self, nodes):
+        """Add a list of Nodes to the NodeDict.
+        
+        This DOES NOT actually add nodes to the LB, 
+        it should be called from the LB's add_nodes method"""
+        for node in nodes:
+            self.dico.append(node)
+
+    def delete(self, nid):
+        """Delete a Node from the NodeDict.
+        
+        This DOES NOT actually remove nodes from the LB, 
+        it should be called from the node.delete() method"""
+        for x in range(len(self.dico)):
+            if self.dico[x].id == nid:
+                del self.dico[x]
+
+
 
 class Node(SubResource):
     def __repr__(self):
@@ -61,6 +79,7 @@ class Node(SubResource):
         self._parent.manager.delete_node(self._parent.id,
                                          self.id,
                                          )
+        self._parent.nodes.delete(self.id)
 
     def update(self):
         ret = {}
