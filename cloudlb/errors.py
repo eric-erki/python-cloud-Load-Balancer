@@ -25,7 +25,7 @@ class RateLimit(ResponseError):
     Raised when too many requests have been made 
     of the remote service in a given time period.
     """
-    self.status = 413
+    status = 413
     
     def __init__(self, wait):
         self.wait = wait

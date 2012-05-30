@@ -153,24 +153,29 @@ class CLBClient(httplib2.Http):
                 sys.stderr.write("BODY:")
                 pp.pprint(body)
 
+        if (response.status >= 200) and (response.status < 300):
+            return response, body
+
+        try:
+            message = ', '.join(body['messages'])
+        except KeyError:
+            message = body['message']
         if response.status == 413:
             raise cloudlb.errors.RateLimit(retry)
         elif response.status == 404:
-            raise cloudlb.errors.NotFound(response.status, body['message'])
+            raise cloudlb.errors.NotFound(response.status, message)
         elif response.status == 400:
-            raise cloudlb.errors.BadRequest(response.status, body['message'])
+            raise cloudlb.errors.BadRequest(response.status, message)
         elif response.status == 422:
-            if 'unprocessable' in body['message']:
+            if 'unprocessable' in message:
                 raise cloudlb.errors.UnprocessableEntity(response.status, 
-                        body['message'])
+                        message)
             else:
                 raise cloudlb.errors.ImmutableEntity(response.status,
-                        body['message'])
-        elif (response.status < 200) or (response.status > 299):
+                        message)
+        else:
             raise cloudlb.errors.ResponseError(response.status,
-                    body['message'])
-
-        return response, body
+                    message)
 
     def put(self, url, **kwargs):
         return self._cloudlb_request(url, 'PUT', **kwargs)
