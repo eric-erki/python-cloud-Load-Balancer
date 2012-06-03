@@ -37,7 +37,7 @@ class CLBClient(httplib2.Http):
         elif region.lower() in cloudlb.consts.REGION.keys():
             self.region = cloudlb.consts.REGION[region]
         else:
-            raise cloudlb.errors.InvalidRegion()
+            raise cloudlb.errors.InvalidRegion(region)
 
         self.auth_token = None
         self.account_number = None
@@ -47,19 +47,33 @@ class CLBClient(httplib2.Http):
         headers = {'Content-Type': 'application/json'}
         body = '{"credentials": {"username": "%s", "key": "%s"}}' \
                % (self.username, self.api_key)
+
+        #DEBUGGING:
+        if 'PYTHON_CLOUDLB_DEBUG' in os.environ:
+            pp = pprint.PrettyPrinter(stream=sys.stderr, indent=2)
+            sys.stderr.write("URL: %s\n" % (self._auth_url))
+
         response, body = self.request(self._auth_url, 'POST',
                                       body=body, headers=headers)
 
-        auth_data = json.loads(body)['auth']
+        if 'PYTHON_CLOUDLB_DEBUG' in os.environ:
+            sys.stderr.write("RETURNED HEADERS: %s\n" % (str(response)))
+            sys.stderr.write("BODY:")
+            pp.pprint(body)
+
+        data = json.loads(body)
 
         # A status code of 401 indicates that the supplied credentials
         # were not accepted by the authentication service.
         if response.status == 401:
-            raise cloudlb.errors.AuthenticationFailed()
+            reason = data['unauthorized']['message']
+            raise cloudlb.errors.AuthenticationFailed(response.status, reason)
 
         if response.status != 200:
             raise cloudlb.errors.ResponseError(response.status,
                                                response.reason)
+
+        auth_data = data['auth']
 
         self.account_number = int(os.path.basename(
           auth_data['serviceCatalog']['cloudServers'][0]['publicURL']))
@@ -102,6 +116,9 @@ class CLBClient(httplib2.Http):
         # If you have to wait more then 10 seconds,
         # raise ResponseError with a more sane message then CLB provides
         if response.status == 413:
+            if 'PYTHON_CLOUDLB_DEBUG' in os.environ:
+                sys.stderr.write("(413) BODY:")
+                pp.pprint(body)
             now = datetime.datetime.strptime(response['date'],
                     '%a, %d %b %Y %H:%M:%S %Z')
             # Retry-After header now doesn't always return a timestamp, 
@@ -112,9 +129,7 @@ class CLBClient(httplib2.Http):
                         '%a, %d %b %Y %H:%M:%S %Z')
             except ValueError:
                 if response['retry-after'] > '30':
-                    raise cloudlb.errors.ResponseError(response.status,
-                        "Account is currently above limit, please wait %s seconds." % 
-                        (response['retry-after']))
+                    raise cloudlb.errors.RateLimit(response['retry-after'])
                 else:
                     time.sleep(5)
                     response, body = self.request(fullurl, method, **kwargs)
@@ -122,9 +137,7 @@ class CLBClient(httplib2.Http):
                 raise
             else:
                 if (retry - now) > datetime.timedelta(seconds=10):
-                    raise cloudlb.errors.ResponseError(response.status,
-                        "Account is currently above limit, please wait %s seconds." % 
-                        (retry - now))
+                    raise cloudlb.errors.RateLimit((retry - now))
                 else:
                     time.sleep((retry - now).seconds)
                     response, body = self.request(fullurl, method, **kwargs)
@@ -139,17 +152,29 @@ class CLBClient(httplib2.Http):
                 sys.stderr.write("BODY:")
                 pp.pprint(body)
 
-        if response.status == 413:
-            raise cloudlb.errors.ResponseError(response.status,
-                    "Account is currently above limit, please wait until"
-                    + retry + ".")
-        elif response.status == 404:
-            raise cloudlb.errors.NotFound(response.status, body['message'])
-        elif (response.status < 200) or (response.status > 299):
-            raise cloudlb.errors.ResponseError(response.status,
-                                               response.reason)
+        if (response.status >= 200) and (response.status < 300):
+            return response, body
 
-        return response, body
+        try:
+            message = ', '.join(body['messages'])
+        except KeyError:
+            message = body['message']
+        if response.status == 413:
+            raise cloudlb.errors.RateLimit(retry)
+        elif response.status == 404:
+            raise cloudlb.errors.NotFound(response.status, message)
+        elif response.status == 400:
+            raise cloudlb.errors.BadRequest(response.status, message)
+        elif response.status == 422:
+            if 'unprocessable' in message:
+                raise cloudlb.errors.UnprocessableEntity(response.status, 
+                        message)
+            else:
+                raise cloudlb.errors.ImmutableEntity(response.status,
+                        message)
+        else:
+            raise cloudlb.errors.ResponseError(response.status,
+                    message)
 
     def put(self, url, **kwargs):
         return self._cloudlb_request(url, 'PUT', **kwargs)

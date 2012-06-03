@@ -1,6 +1,7 @@
 # -*- encoding: utf-8 -*-
 __author__ = "Chmouel Boudjnah <chmouel@chmouel.com>"
 
+import cloudlb.consts
 
 class CloudlbException(Exception): pass
 
@@ -19,13 +20,45 @@ class ResponseError(CloudlbException):
     def __repr__(self):
         return '%d: %s' % (self.status, self.reason)
 
+class RateLimit(ResponseError):
+    """
+    Raised when too many requests have been made 
+    of the remote service in a given time period.
+    """
+    status = 413
+    
+    def __init__(self, wait):
+        self.wait = wait
+        self.reason = "Account is currently above limit, please wait %s seconds." % (wait)
+        Exception.__init__(self)
+
+class BadRequest(ResponseError):
+    """
+    Raised when the request doesn't match what was anticipated.
+    """
+    pass
+
+# Immutable and Unprocessable Entity are both 422 errors, but have slightly different meanings
+class ImmuntableEntity(ResponseError):
+    pass
+
+class UnprocessableEntity(ResponseError):
+    pass
 
 class InvalidRegion(CloudlbException):
     """
     Raised when the region specified is invalid
     """
-    pass
+    regions = cloudlb.consts.REGION.values() + cloudlb.consts.REGION.keys()
+    def __init__(self, region):
+        self.region = region
+        Exception.__init__(self)
 
+    def __str__(self):
+        return 'Region %s not in active region list: %s' % (self.region, ', '.join(self.regions))
+
+    def __repr__(self):
+        return 'Region %s not in active region list: %s' % (self.region, ', '.join(self.regions))
 
 class InvalidProtocol(CloudlbException):
     """
@@ -34,7 +67,7 @@ class InvalidProtocol(CloudlbException):
     pass
 
 
-class AuthenticationFailed(CloudlbException):
+class AuthenticationFailed(ResponseError):
     """
     Raised on a failure to authenticate.
     """
