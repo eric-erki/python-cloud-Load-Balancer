@@ -39,7 +39,7 @@ class BadRequest(ResponseError):
     pass
 
 # Immutable and Unprocessable Entity are both 422 errors, but have slightly different meanings
-class ImmuntableEntity(ResponseError):
+class ImmutableEntity(ResponseError):
     pass
 
 class UnprocessableEntity(ResponseError):
