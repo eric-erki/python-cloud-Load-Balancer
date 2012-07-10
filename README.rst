@@ -289,7 +289,7 @@ Delete Health Monitor rule::
   hm_monitor = mylb.healthmonitor()
   hm_monitor.delete()
 
-Add http cookie session persistense::
+Add http cookie session persistence::
 
   #!/usr/bin/python
   import cloudlb
@@ -298,9 +298,9 @@ Add http cookie session persistense::
   lbs = clb.loadbalancers.list()
   mylb = lbs[0] #first lb
 
-  ss = cloudlb.sessionpersistense.SessionPersistense(persistenceType="HTTP_COOKIE")
+  ss = cloudlb.sessionpersistence.SessionPersistence(persistenceType="HTTP_COOKIE")
 
-  ssp = mylb.session_persistense()
+  ssp = mylb.session_persistence()
   ssp.add(ss)
 
 Get session persistence::
@@ -312,10 +312,10 @@ Get session persistence::
   lbs = clb.loadbalancers.list()
   mylb = lbs[0] #first lb
 
-  ssp = mylb.session_persistense()
+  ssp = mylb.session_persistence()
   print ssp.get()
 
-Delete session persistense configuration::
+Delete session persistence configuration::
 
   #!/usr/bin/python
   import cloudlb
@@ -324,7 +324,7 @@ Delete session persistense configuration::
   lbs = clb.loadbalancers.list()
   mylb = lbs[0] #first lb
 
-  ssp = mylb.session_persistense()
+  ssp = mylb.session_persistence()
   ssp.delete()
 
 Enable/Disable Connection Logging::
@@ -403,4 +403,5 @@ Author
 ======
 
 Chmouel Boudjnah <chmouel@chmouel.com>
+
 
