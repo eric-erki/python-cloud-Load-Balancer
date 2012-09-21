@@ -138,13 +138,12 @@ class LoadBalancerManager(base.ManagerWithFind):
         
 
     def create(self, name, port,
-               protocol, nodes, virtualIps, algorithm='RANDOM', metadata=None):
+               protocol, nodes, virtualIps, algorithm='RANDOM', **kwargs):
         """
         Create a new loadbalancer.
 
         #TODO: Args
         """
-
         if not protocol in LB_PROTOCOLS:
             raise InvalidProtocol("''%s'' is not a valid protocol" % \
                                       (protocol))
@@ -154,16 +153,18 @@ class LoadBalancerManager(base.ManagerWithFind):
 
         if len(name) > 128:
             raise InvalidLoadBalancerName("LB name is too long.")
-        
         body = {"loadBalancer": {
             "name": name,
             "port": base.getid(port),
             "protocol": protocol,
             "nodes": nodeDico,
             "virtualIps": vipDico,
-            "algorithm": algorithm,
-	    "metadata": metadata
+            "algorithm": algorithm
         }}
+
+        if kwargs: 
+            for key in kwargs:
+                body["loadBalancer"][key] = kwargs[key]
 
         return self._create("/loadbalancers", body, "loadBalancer")
 
