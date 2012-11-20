@@ -38,9 +38,8 @@ class HealthMonitor(SubResource):
 
             #TODO: Documentation says that statusRegex or bodyRegex
             #can be "" but that come back NULL
-            if not all([path, statusRegex, bodyRegex]):
-                raise Exception("You need to specify a path statusregexp " +
-                                "and bodyregexp with HTTP(S) monitor")
+            if not path:
+                raise Exception("You need to specify a path with HTTP(S) monitor")
 
 
 class HealthMonitorManager(SubResourceManager):
