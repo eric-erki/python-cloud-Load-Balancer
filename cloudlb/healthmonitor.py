@@ -34,12 +34,12 @@ class HealthMonitor(SubResource):
         if self.type in ("HTTP", "HTTPS"):
             self.path = path
             self.statusRegex = statusRegex
-            self.bodyRegex = bodyRegex
+            # We're only going to define self.bodyRegex is we've been passed a value for it. 
+            if bodyRegex:
+                self.bodyRegex = bodyRegex
 
-            #TODO: Documentation says that statusRegex or bodyRegex
-            #can be "" but that come back NULL
-            if not path:
-                raise Exception("You need to specify a path with HTTP(S) monitor")
+            if not all([path, statusRegex]):
+                raise Exception("You need to specify a path and statusRegexwith HTTP(S) monitor")
 
 
 class HealthMonitorManager(SubResourceManager):
