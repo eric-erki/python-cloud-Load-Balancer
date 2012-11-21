@@ -39,7 +39,7 @@ class HealthMonitor(SubResource):
                 self.bodyRegex = bodyRegex
 
             if not all([path, statusRegex]):
-                raise Exception("You need to specify a path and statusRegexwith HTTP(S) monitor")
+                raise Exception("You need to specify a path and statusRegex with HTTP(S) monitor")
 
 
 class HealthMonitorManager(SubResourceManager):
