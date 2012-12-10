@@ -42,7 +42,7 @@ class NodeDict(SubResourceDict):
         
         This DOES NOT actually remove nodes from the LB, 
         it should be called from the node.delete() method"""
-        for x in range(len(self.dico)):
+        for x in range(len(self.dico) - 1, -1, -1):
             if self.dico[x].id == nid:
                 del self.dico[x]
 
