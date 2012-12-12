@@ -208,7 +208,7 @@ class LoadBalancerManager(base.ManagerWithFind):
     def update(self, lb, originalInfo, info):
         ret = {}
         for k in LB_ATTRIBUTES_MODIFIABLE:
-            if k in originalInfo and info[k] != originalInfo[k]:
+            if k in info and info[k] != originalInfo.get(k):
                 ret[k] = info[k]
 
         if 'protocol' in ret.keys() and ret['protocol'] not in LB_PROTOCOLS:
