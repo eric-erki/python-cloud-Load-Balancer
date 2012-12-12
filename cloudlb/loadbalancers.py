@@ -138,7 +138,7 @@ class LoadBalancerManager(base.ManagerWithFind):
         
 
     def create(self, name, port,
-               protocol, nodes, virtualIps, algorithm='RANDOM', **kwargs):
+               protocol, nodes, virtualIps, algorithm='RANDOM', timeout=30, **kwargs):
         """
         Create a new loadbalancer.
 
@@ -148,6 +148,7 @@ class LoadBalancerManager(base.ManagerWithFind):
         :param nodes: List of nodes to be added to the LB
         :param virtualIps: Type of vIP to add with creation of LB
         :param algorithm: Algorithm that defines how traffic should be directed
+        :param timeout: Timeout (seconds) for unresponsive backend nodes
         :param kwargs: Name-based arguments for optional LB parameters (such as metadata)
         :rtype: :class:'LoadBalancer'
         """
@@ -166,7 +167,8 @@ class LoadBalancerManager(base.ManagerWithFind):
             "protocol": protocol,
             "nodes": nodeDico,
             "virtualIps": vipDico,
-            "algorithm": algorithm
+            "algorithm": algorithm,
+            "timeout": timeout
         }}
 
         if kwargs: 
