@@ -636,8 +636,7 @@ class CLBCli(object):
 
         if config['type'] in ("HTTP", "HTTPS") and \
                 not all(['path' in config,
-                         'statusRegex' in config,
-                         'bodyRegex' in config]):
+                         'statusRegex' in config]):
                 self._se("You are missing some arguments for %s healthMonitor" \
                              % config['type'])
                 sys.exit(1)
