@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 __author__ = "Chmouel Boudjnah <chmouel@chmouel.com>"
-VERSION = "0.5.1"
-USER_AGENT = 'python-cloudb/%s' % VERSION
+VERSION = "0.6.0dev"
+USER_AGENT = 'python-cloudlb/%s' % VERSION
 
 # Default AUTH SERVER
 DEFAULT_AUTH_SERVER = "https://auth.api.rackspacecloud.com/v1.1/auth"
