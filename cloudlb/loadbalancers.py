@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-__author__ = "Chmouel Boudjnah <chmouel@chmouel.com>"
+__author__ = "Chmouel Boudjnah <chmouel@chmouel.com>, Randall Burt <randall.burt@rackspace.com>"
 from cloudlb import base
 from cloudlb.consts import LB_PROTOCOLS, LB_ATTRIBUTES_MODIFIABLE
 from cloudlb.errors import InvalidProtocol, InvalidLoadBalancerName
@@ -14,6 +14,7 @@ from cloudlb.connectionlogging import ConnectionLogging
 from cloudlb.connectionthrottle import ConnectionThrottleManager
 from cloudlb.errorpage import ErrorPage
 from cloudlb.ssltermination import SSLTermination
+
 
 class LoadBalancer(base.Resource):
     accessList = None
@@ -135,7 +136,6 @@ class LoadBalancerManager(base.ManagerWithFind):
         return [x for x in \
                     self._list("/loadbalancers.json?nodeaddress=%s" % ip, 
                         "loadBalancers")]
-        
 
     def create(self, name, port,
                protocol, nodes, virtualIps, algorithm='RANDOM', timeout=30, **kwargs):
@@ -171,7 +171,7 @@ class LoadBalancerManager(base.ManagerWithFind):
             "timeout": timeout
         }}
 
-        if kwargs: 
+        if kwargs:
             for key in kwargs:
                 body["loadBalancer"][key] = kwargs[key]
 
@@ -221,3 +221,9 @@ class LoadBalancerManager(base.ManagerWithFind):
 
         self.api.client.put('/loadbalancers/%s' % base.getid(lb), body=ret)
 
+    def get_absolute_limits(self):
+        _, body = self.api.client.get("/loadbalancers/absolutelimits")
+        return {name: val for name, val in [(item.get('name'),
+                                             item.get('value'))
+                                            for item in
+                                            body.get('absolute')]}
