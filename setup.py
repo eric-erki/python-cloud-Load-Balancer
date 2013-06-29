@@ -23,7 +23,7 @@ except ImportError:
         if line.startswith('VERSION'):
             VERSION = line.split('=')[1].replace('"', '').replace("'", '').strip()
 
-requirements = ['httplib2']
+requirements = ['httplib2', 'python-dateutil']
 
 setup(name=NAME,
       version=VERSION,
