@@ -3,6 +3,8 @@
 from jacobian python-cloudservers library"""
 import datetime
 
+from dateutil import parser
+
 
 class Resource(object):
     """ A resource represents a particular instance of an object
@@ -198,12 +200,4 @@ def convert_iso_datetime(dt):
     """
     Convert iso8601 to datetime
     """
-    isoFormat = "%Y-%m-%dT%H:%M:%S+0000"
-    if type(dt) is datetime.datetime:
-        return dt
-
-    if dt.endswith("Z"):
-        dt = dt.split('Z')[0]
-        isoFormat = "%Y-%m-%dT%H:%M:%S"
-
-    return datetime.datetime.strptime(dt, isoFormat)
+    return parser.parse(dt)
