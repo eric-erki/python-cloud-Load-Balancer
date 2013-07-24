@@ -121,6 +121,12 @@ class CLBClient(httplib2.Http):
                 pp.pprint(body)
             now = datetime.datetime.strptime(response['date'],
                     '%a, %d %b %Y %H:%M:%S %Z')
+
+            # Absolute limits are not resolved by waiting
+            if not 'retry-after' in response:
+                data = json.loads(body)
+                raise cloudlb.errors.AbsoluteLimit(data['message'])
+
             # Retry-After header now doesn't always return a timestamp, 
             # try parsing the timestamp, if that fails wait 5 seconds 
             # and try again.  If it succeeds figure out how long to wait
@@ -155,15 +161,17 @@ class CLBClient(httplib2.Http):
         if (response.status >= 200) and (response.status < 300):
             return response, body
 
+        if response.status == 404:
+            raise cloudlb.errors.NotFound(response.status, '%s not found' % url)
+        elif response.status == 413:
+            raise cloudlb.errors.RateLimit(retry)
+
         try:
             message = ', '.join(body['messages'])
         except KeyError:
             message = body['message']
-        if response.status == 413:
-            raise cloudlb.errors.RateLimit(retry)
-        elif response.status == 404:
-            raise cloudlb.errors.NotFound(response.status, message)
-        elif response.status == 400:
+
+        if response.status == 400:
             raise cloudlb.errors.BadRequest(response.status, message)
         elif response.status == 422:
             if 'unprocessable' in message:
