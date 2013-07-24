@@ -73,4 +73,4 @@ to launch the tests.
         self.assertEqual(r.status, 200)
 
         callme = lambda: client.get("/loadbalancersf")
-        self.assertRaises(cloudlb.errors.ResponseError, callme)
+        self.assertRaises(cloudlb.errors.NotFound, callme)

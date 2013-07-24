@@ -32,6 +32,17 @@ class RateLimit(ResponseError):
         self.reason = "Account is currently above limit, please wait %s seconds." % (wait)
         Exception.__init__(self)
 
+class AbsoluteLimit(ResponseError):
+    """
+    Raised when an absolute limit is reached. Absolute limits include the
+    number of load balancers in a region, the number of nodes behind a load
+    balancer.
+    """
+    status = 413
+    def __init__(self, reason):
+        self.reason = reason
+        Exception.__init__(self)
+
 class BadRequest(ResponseError):
     """
     Raised when the request doesn't match what was anticipated.
