@@ -18,6 +18,7 @@ REGION = {
     "dallas": "dfw",
     "london": "lon",
     "sydney": "syd",
+    "hongkong": "hkg",
     "staging": "staging",
 }
 
