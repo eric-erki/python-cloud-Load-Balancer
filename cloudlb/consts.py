@@ -29,7 +29,8 @@ LB_PROTOCOLS = ["FTP", "HTTP", "IMAPv4", "POP3", "LDAP",
 
 # Attributed allowed to be modified on loadbalancers
 LB_ATTRIBUTES_MODIFIABLE = ["name", "algorithm", "protocol", 
-                            "port", "timeout", "httpsRedirect"]
+                            "port", "timeout", "httpsRedirect",
+                            "halfClosed"]
 
 # Types of VirtualIPS
 VIRTUALIP_TYPES = ["PUBLIC", "SERVICENET"]
