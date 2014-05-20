@@ -76,7 +76,7 @@ class CLBClient(httplib2.Http):
         auth_data = data['auth']
 
         self.account_number = int(os.path.basename(
-          auth_data['serviceCatalog']['cloudServers'][0]['publicURL']))
+          auth_data['serviceCatalog']['cloudServersOpenStack'][0]['publicURL']))
         self.auth_token = auth_data['token']['id']
         self.region_account_url = "%s/%s" % (
             cloudlb.consts.REGION_URL % (self.region),
