@@ -4,7 +4,7 @@ __author__ = "Chmouel Boudjnah <chmouel@chmouel.com>"
 import os
 from setuptools import setup, find_packages
 NAME = "python-cloudlb"
-GITHUB_URL = "https://github.com/rackspace/%s" % (NAME)
+GITHUB_URL = "https://github.com/rackerlabs/%s" % (NAME)
 DESCRIPTION = "Python interface to Rackspace Load Balancer" + \
     " as a Service product"
 
@@ -18,7 +18,7 @@ def read(fname):
 try:
     from cloudlb.consts import VERSION
 except ImportError:
-    VERSION="0.6.1"
+    VERSION="0.6.2"
     for line in read('cloudlb/consts.py').split('\n'):
         if line.startswith('VERSION'):
             VERSION = line.split('=')[1].replace('"', '').replace("'", '').strip()
